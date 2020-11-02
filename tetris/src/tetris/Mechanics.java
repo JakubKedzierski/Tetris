@@ -28,6 +28,7 @@ public class Mechanics {
 	private Color board[][] = new Color[BOARD_MAX_ROW][BOARD_MAX_COLUMN];
 	private Point[] active = { new Point(5, 0), new Point(5, 1), new Point(6, 0), new Point(6, 1) };
 	private Point activePivot = null;
+	private boolean sequenceCheckFlag = false;
 
 	public Mechanics() {
 		for (int i = 0; i < board.length; i++) {
@@ -76,9 +77,24 @@ public class Mechanics {
 		return str.toString();
 	}
 
-	public void rotate() throws ArrayIndexOutOfBoundsException {
+	public boolean checkPossibilityOfRotation() {
+		int x=0,y=0;
+		for (Point act : active) {
+			x = activePivot.x + activePivot.y - act.y;
+			y = activePivot.y - activePivot.x + act.x;
+			if(x >BOARD_MAX_ROW-1) return false;
+			if(x <0) return false;
+			if(y <0) return false;
+			if(y >BOARD_MAX_COLUMN-1) return false;
+		}
+		return true;
+	}
+	
+	public void rotate() {
 
 		if (activePivot != null) {
+			if(!checkPossibilityOfRotation()) return;
+			
 			Color tempColor = board[active[0].x][active[0].y];
 			for (Point act : active) {
 				board[act.x][act.y] = Color.WHITE;
@@ -159,12 +175,14 @@ public class Mechanics {
 	}
 
 	public void deleteSequenceHorizontal(int row, int beg, int end) {
+		sequenceCheckFlag=true;
 		for (int i = beg; i < end; i++) {
 			board[i][row] = Color.WHITE;
 		}
 	}
 
 	public void deleteSequenceVertical(int column, int beg, int end) {
+		sequenceCheckFlag=true;
 		for (int i = beg; i < end; i++) {
 			board[column][i] = Color.WHITE;
 		}
@@ -242,7 +260,7 @@ public class Mechanics {
 
 	public void findSequence() {
 		ArrayList<Color> array = new ArrayList<Color>(Collections.nCopies(10, Color.WHITE));
-
+		
 		for (int i = 0; i < BOARD_MAX_COLUMN; i++) {
 			for (int j = 0; j < BOARD_MAX_ROW; j++) {
 				array.set(j, board[j][i]);
@@ -307,6 +325,14 @@ public class Mechanics {
 		}
 		return true;
 	}
+	
+	private void lookForSequences() {
+		do {
+			sequenceCheckFlag=false;
+			moveBricksToEndPosition();
+			findSequence();
+		}while (sequenceCheckFlag);
+	}
 
 	/**
 	 * Creating Tetrimino and giving them color
@@ -314,11 +340,10 @@ public class Mechanics {
 	 * @return
 	 */
 	public boolean makeTetrimino() {
+		lookForSequences();
+		
 		int randomNumb = (int) (Math.random() * 7);
-
-		findSequence();
-		moveBricksToEndPosition();
-
+		
 		switch (randomNumb) {
 
 		// TETRIMINO "I"
@@ -380,16 +405,15 @@ public class Mechanics {
 
 		// TETRIMINO "J"
 		case 4:
-			if (active[0].x - 1 < 0) {
-				active[0].x += 1;
+			if (active[0].x + 1 > BOARD_MAX_ROW - 1) {
+				active[0].x -= 1;
 			}
-			active[0].x = active[0].x + 1;
-			active[0].y = 0;
-			active[1].x = active[0].x;
-			active[1].y = 1;
-			active[2].x = active[0].x;
-			active[2].y = 2;
-			active[3].x = active[0].x - 1;
+			active[0].y = 2;
+			active[1].x = active[0].x+1;
+			active[1].y = 0;
+			active[2].x = active[0].x+1;
+			active[2].y = 1;
+			active[3].x = active[0].x+ 1;
 			active[3].y = 2;
 			activePivot = active[1];
 			break;
