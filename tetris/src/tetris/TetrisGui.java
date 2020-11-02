@@ -1,18 +1,11 @@
 package tetris;
 
 import java.awt.*;
-import java.awt.geom.*;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
-import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 public class TetrisGui {
 	TetrisFrame frame;
@@ -25,7 +18,9 @@ public class TetrisGui {
 	}
 	
 	public void endGame() {
-		
+		new EndGameFrame(frame);
+		frame.dispose();
+		new Tetris();
 	}
 
 	public void update() {
@@ -123,39 +118,6 @@ class TetrisFrame extends JFrame {
 
 	public void update() {
 		tetrisBoard.repaint();
-	}
-
-}
-
-class InfoBox extends JPanel {
-	private static final long serialVersionUID = 1L;
-
-	private JLabel time = new JLabel("Time:");
-	private JLabel points = new JLabel("Points:");
-	private JLabel nextBrick = new JLabel("next brick will be:");
-	private JButton pause = new JButton("Pause");
-	private Color panelColor=new Color(237, 244, 248);
-
-	InfoBox() {
-		setBackground(panelColor);
-		setLayout(new BorderLayout());
-		setPreferredSize(new Dimension(200, 300));
-		JLabel labels[] = { time, points, nextBrick };
-
-		for (JLabel label : labels) {
-			label.setBounds(50, 50, 100, 30);
-			label.setFont(new Font("Verdana", Font.PLAIN, 18));
-		}
-		JPanel timePanel = new JPanel();
-		timePanel.setLayout(new BorderLayout());
-		timePanel.add(time, BorderLayout.NORTH);
-		timePanel.add(points, BorderLayout.CENTER);
-		timePanel.setBackground(panelColor);
-		pause.addActionListener(null);
-
-		add(timePanel, BorderLayout.NORTH);
-		add(nextBrick, BorderLayout.CENTER);
-		// add(pause,BorderLayout.SOUTH);
 	}
 
 }
