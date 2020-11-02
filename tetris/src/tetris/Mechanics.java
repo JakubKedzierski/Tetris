@@ -476,7 +476,16 @@ public class Mechanics {
 				break;
 			}
 		}
+		
 		return false;
+	}
+	
+	boolean playGame() {
+		move(Direction.DOWN);
+		if(!checkMovePossibility(Direction.DOWN)) {
+			return false;
+		}
+		return true;
 	}
 
 }

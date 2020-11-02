@@ -35,7 +35,11 @@ public class Tetris {
 
 		@Override
 		public void run() {
-			mechanics.move(Direction.DOWN);
+			if(!mechanics.playGame()) {
+				timer.cancel();
+				gui.endGame();
+				timer.purge();
+			}
 			gui.update();
 		}
 	}

@@ -23,6 +23,10 @@ public class TetrisGui {
 		frame.pack();
 		frame.setVisible(true);
 	}
+	
+	public void endGame() {
+		
+	}
 
 	public void update() {
 		frame.update();
