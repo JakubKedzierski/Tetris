@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -21,7 +22,7 @@ class GameException extends Exception {
 	}
 }
 
-public class Mechanics {
+public class Mechanics implements Observable {
 	final static int BOARD_MAX_ROW = 10;
 	final static int BOARD_MAX_COLUMN = 20;
 	private boolean stop = false;
@@ -29,6 +30,7 @@ public class Mechanics {
 	private Point[] active = { new Point(5, 0), new Point(5, 1), new Point(6, 0), new Point(6, 1) };
 	private Point activePivot = null;
 	private boolean sequenceCheckFlag = false;
+	private Set<Observer> observers = new HashSet<>();
 
 	public Mechanics() {
 		for (int i = 0; i < board.length; i++) {
@@ -155,15 +157,52 @@ public class Mechanics {
 
 	public boolean move(Direction direct) {
 		if (!stop) {
+			if (direct == Direction.DOWN) {
+				if (checkMoveDown()) {
+					changeActivePosition(direct);
+					return true;
+				} else {
+					makeTetrimino();
+					return false;
+				}
+			}
+
 			if (checkMovePossibility(direct)) {
 				changeActivePosition(direct);
 			} else {
 				return false;
 			}
 		}
+
 		return true;
 	}
 
+	public boolean checkMoveDown() {
+		boolean skip = false;
+		for (Point act : active) {
+			skip = false;
+
+			for (Point skipCheck : active) {
+				if ((act.y + 1 == skipCheck.y) && (act.x == skipCheck.x))
+					skip = true;
+			}
+
+			if (skip == false) {
+
+				if (act.y + 1 > BOARD_MAX_COLUMN - 1) {
+					return false;
+				}
+
+				if (board[act.x][act.y + 1] != Color.WHITE) {
+					return false;
+				}
+
+			}
+		}
+		return true;
+	}
+
+	// do przerobienia check move down jest
 	public boolean checkMovePossibility(Direction direct) {
 		boolean skip = false; // temporary variable to skip checking move possibility for inner cells
 
@@ -172,21 +211,7 @@ public class Mechanics {
 
 			switch (direct) {
 			case DOWN:
-
-				for (Point skipCheck : active) {
-					if ((act.y + 1 == skipCheck.y) && (act.x == skipCheck.x))
-						skip = true;
-				}
-
-				if (skip == false) {
-
-					if (act.y + 1 > BOARD_MAX_COLUMN - 1)
-						return makeTetrimino();
-					if (board[act.x][act.y + 1] != Color.WHITE)
-						return makeTetrimino();
-
-				}
-
+				checkMoveDown();
 				break;
 
 			case RIGHT:
@@ -324,16 +349,30 @@ public class Mechanics {
 
 	public boolean makeTetrimino() {
 		lookForSequences();
-		Tetrimino.makeTetrimino(active, activePivot, board);
+		activePivot=Tetrimino.makeTetrimino(active, activePivot, board);
+		if(!checkMoveDown()) notifyObservers();
 		return false;
 	}
 
-	boolean playGame() {
+	void playGame() {
 		move(Direction.DOWN);
-		if (!checkMovePossibility(Direction.DOWN)) {
-			return false;
-		}
-		return true;
+	}
+
+	@Override
+	public void attach(Observer observer) {
+		observers.add(observer);
+
+	}
+
+	@Override
+	public void detach(Observer observer) {
+		observers.remove(observer);
+	}
+
+	@Override
+	public void notifyObservers() {
+		observers.forEach(Observer::update);
+
 	}
 
 }

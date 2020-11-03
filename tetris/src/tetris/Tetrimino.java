@@ -5,9 +5,9 @@ import java.awt.Point;
 
 public class Tetrimino {
 
-	public static boolean makeTetrimino(Point[] active,Point activePivot,Color board[][]) {
+	public static Point makeTetrimino(Point[] active, Point activePivot, Color board[][]) {
 		int randomNumb = (int) (Math.random() * 7);
-		
+
 		switch (randomNumb) {
 
 		// TETRIMINO "I"
@@ -24,7 +24,7 @@ public class Tetrimino {
 
 		// TETRIMINO "T"
 		case 1:
-			if (active[0].x + 2 > board.length) {
+			if (active[0].x + 2 > board.length - 1) {
 				active[0].x -= 2;
 			}
 			active[0].y = 0;
@@ -39,7 +39,7 @@ public class Tetrimino {
 
 		// TETRIMINO "O"
 		case 2:
-			if (active[0].x + 1 >  board.length) {
+			if (active[0].x + 1 > board.length - 1) {
 				active[0].x -= 1;
 			}
 			active[0].y = 0;
@@ -54,7 +54,7 @@ public class Tetrimino {
 
 		// TETRIMINO "L"
 		case 3:
-			if (active[0].x + 1 > board.length) {
+			if (active[0].x + 1 > board.length - 1) {
 				active[0].x -= 1;
 			}
 			active[0].y = 0;
@@ -69,22 +69,22 @@ public class Tetrimino {
 
 		// TETRIMINO "J"
 		case 4:
-			if (active[0].x + 1 >  board.length) {
+			if (active[0].x + 1 > board.length - 1) {
 				active[0].x -= 1;
 			}
 			active[0].y = 2;
-			active[1].x = active[0].x+1;
+			active[1].x = active[0].x + 1;
 			active[1].y = 0;
-			active[2].x = active[0].x+1;
+			active[2].x = active[0].x + 1;
 			active[2].y = 1;
-			active[3].x = active[0].x+ 1;
+			active[3].x = active[0].x + 1;
 			active[3].y = 2;
 			activePivot = active[1];
 			break;
 
 		// TETRIMINO "S"
 		case 5:
-			if (active[0].x + 2 >  board.length) {
+			if (active[0].x + 2 > board.length - 1) {
 				active[0].x -= 2;
 			}
 			active[0].x = active[0].x;
@@ -100,7 +100,7 @@ public class Tetrimino {
 
 		// TETRIMINO "Z"
 		case 6:
-			if (active[0].x + 2 >  board.length) {
+			if (active[0].x + 2 > board.length - 1) {
 				active[0].x -= 2;
 			}
 			active[0].y = 0;
@@ -140,7 +140,7 @@ public class Tetrimino {
 				break;
 			}
 		}
-		
-		return false;
+
+		return activePivot;
 	}
 }

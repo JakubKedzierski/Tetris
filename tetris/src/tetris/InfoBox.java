@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -51,13 +52,17 @@ class InfoBox extends JPanel {
 
 		g.setColor(Color.BLACK);
 		Color[][] board = new Color[4][4];
+		Point active[]= {new Point(1,0),new Point(2,0),new Point(2,0),new Point(2,0)};
+		Tetrimino.makeTetrimino(active,new Point(2,2),board);
+		
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board[i].length; j++) {
+				g2.setColor(Color.WHITE);
 				g2.drawRect(55 + i * brickSize, 350 + j * brickSize, brickSize, brickSize);
 				if (board[i][j] != Color.WHITE) {
 					g.setColor(board[i][j]);
 					g.fillRect(55 + i * brickSize, 350 + j * brickSize, brickSize - 2, brickSize - 2);
-					g.setColor(Color.BLACK);
+					g.setColor(Color.WHITE);
 				}
 
 			}
