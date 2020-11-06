@@ -99,7 +99,7 @@ class TetrisFrame extends JFrame {
 		setResizable(false);
 
 		tetrisBoard = new BoardBox(m.getBoard());
-		WindowPanel = new InfoBox();
+		WindowPanel = new InfoBox(m);
 		k = new KeyActions(m, this);
 		addKeyListener(k);
 

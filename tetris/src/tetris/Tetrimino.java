@@ -5,10 +5,9 @@ import java.awt.Point;
 
 public class Tetrimino {
 
-	public static Point makeTetrimino(Point[] active, Point activePivot, Color board[][]) {
-		int randomNumb = (int) (Math.random() * 7);
+	public static Point makeTetrimino(Point[] active, Point activePivot, Color board[][],int tetriminoChoice[]) {
 
-		switch (randomNumb) {
+		switch (tetriminoChoice[0]) {
 
 		// TETRIMINO "I"
 		case 0:
@@ -114,9 +113,9 @@ public class Tetrimino {
 			break;
 		}
 
-		randomNumb = (int) (Math.random() * 7);
+
 		for (Point act : active) {
-			switch (randomNumb) {
+			switch (tetriminoChoice[1]) {
 			case 0:
 				board[act.x][act.y] = Color.BLUE;
 				break;

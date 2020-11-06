@@ -30,7 +30,9 @@ public class Mechanics implements Observable {
 	private Point[] active = { new Point(5, 0), new Point(5, 1), new Point(6, 0), new Point(6, 1) };
 	private Point activePivot = null;
 	private boolean sequenceCheckFlag = false;
+	private boolean endGame=false;
 	private Set<Observer> observers = new HashSet<>();
+	private int randomNumb[] = { (int) (Math.random() * 7),(int) (Math.random() * 7) };
 
 	public Mechanics() {
 		for (int i = 0; i < board.length; i++) {
@@ -38,6 +40,14 @@ public class Mechanics implements Observable {
 				board[i][j] = Color.WHITE;
 			}
 		}
+	}
+	
+	public void setEndGame(boolean endGame) {
+		this.endGame=endGame;
+	}
+	
+	public boolean getEndGame() {
+		return this.endGame;
 	}
 
 	public void pause() {
@@ -347,10 +357,19 @@ public class Mechanics implements Observable {
 		} while (sequenceCheckFlag);
 	}
 
+	public int[] randNextTetrimino() {
+		randomNumb[0] =  (int) (Math.random() * 7);
+		randomNumb[1] =  (int) (Math.random() * 7);
+		return randomNumb;
+	}
+	
 	public boolean makeTetrimino() {
 		lookForSequences();
-		activePivot=Tetrimino.makeTetrimino(active, activePivot, board);
-		if(!checkMoveDown()) notifyObservers();
+		activePivot=Tetrimino.makeTetrimino(active, activePivot, board,randomNumb);
+		notifyObservers();
+		if(!checkMoveDown()) {
+			setEndGame(true);
+		}
 		return false;
 	}
 

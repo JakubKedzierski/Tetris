@@ -3,30 +3,25 @@ package tetris;
 import java.util.Timer;
 import java.util.TimerTask;
 
-interface Observer{
+interface Observer {
 	public void update();
 }
 
-interface Observable{
+interface Observable {
 	public void attach(Observer observer);
+
 	public void detach(Observer observer);
+
 	public void notifyObservers();
 }
 
-
-public class Tetris implements Observer{
+public class Tetris implements Observer {
 	private Mechanics mechanics;
 	private TetrisGui gui;
 	private Timer timer;
 	private final int INITIAL_DELAY = 1300;
 	private final int PERIOD_INTERVAL = 400;
 
-	public void mainLoop() {
-		while (true) {
-			
-		}
-
-	}
 
 	public Tetris() {
 		mechanics = new Mechanics();
@@ -39,9 +34,7 @@ public class Tetris implements Observer{
 	}
 
 	public static void main(String[] args) {
-		Tetris game = new Tetris();
-		game.mainLoop();
-
+		new Tetris();
 	}
 
 	private class ScheduleTask extends TimerTask {
@@ -55,10 +48,12 @@ public class Tetris implements Observer{
 
 	@Override
 	public void update() {
-		timer.cancel();
-		gui.endGame();
-		timer.purge();
-		
+		if (mechanics.getEndGame()) {
+			timer.cancel();
+			gui.endGame();
+			timer.purge();
+		}
+
 	}
 
 }
