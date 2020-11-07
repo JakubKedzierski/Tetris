@@ -1,6 +1,6 @@
 package tetris;
 
-import java.awt.*;
+import java.awt.Point;
 import java.util.stream.Collectors;
 import java.lang.StringBuilder;
 import java.util.ArrayList;
@@ -9,6 +9,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
 
 enum Direction {
 	LEFT, RIGHT, DOWN;
@@ -22,53 +27,43 @@ class GameException extends Exception {
 	}
 }
 
+@AllArgsConstructor(access=AccessLevel.PUBLIC)
 public class Mechanics implements Observable {
 	final static int BOARD_MAX_ROW = 10;
 	final static int BOARD_MAX_COLUMN = 20;
+	
+	@Getter
+	@Setter
 	private boolean stop = false;
-	private Color board[][] = new Color[BOARD_MAX_ROW][BOARD_MAX_COLUMN];
-	private Point[] active = { new Point(5, 0), new Point(5, 1), new Point(6, 0), new Point(6, 1) };
-	private Point activePivot = null;
+	
+	@Getter
+	@Setter
+	private ColorType board[][] = new ColorType[BOARD_MAX_ROW][BOARD_MAX_COLUMN];
+
+	@Getter
+	@Setter
+	private Tetrimino activeTetrimino = null;
+	
 	private boolean sequenceCheckFlag = false;
+	
+	@Getter
+	@Setter
 	private boolean endGame=false;
 	private Set<Observer> observers = new HashSet<>();
-	private int randomNumb[] = { (int) (Math.random() * 7),(int) (Math.random() * 7) };
+	private int nextBrickChoice[] = { (int) (Math.random() * 7),(int) (Math.random() * 7) };
 
 	public Mechanics() {
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board[i].length; j++) {
-				board[i][j] = Color.WHITE;
+				board[i][j] = ColorType.empty;
 			}
 		}
 	}
 	
-	public void setEndGame(boolean endGame) {
-		this.endGame=endGame;
-	}
-	
-	public boolean getEndGame() {
-		return this.endGame;
-	}
-
-	public void pause() {
-		stop = true;
-	}
-
-	public void unPause() {
-		stop = false;
-	}
-
-	public boolean isPaused() {
-		return stop;
-	}
-
-	public Color[][] getBoard() {
-		return board;
-	}
 
 	public String ToString() {
 		StringBuilder str = new StringBuilder();
-		for (Point act : active) {
+		for (Point act : activeTetrimino.getActiveBricks()) {
 			str.append("x: " + act.x + " y: " + act.y + "\n");
 		}
 		return str.toString();
@@ -79,7 +74,7 @@ public class Mechanics implements Observable {
 		for (int i = 0; i < BOARD_MAX_COLUMN; i++) {
 			str.append("\n");
 			for (int j = 0; j < BOARD_MAX_ROW; j++) {
-				if (board[j][i] != Color.WHITE)
+				if (board[j][i] != ColorType.empty)
 					str.append(1 + " ");
 				else {
 					str.append(0 + " ");
@@ -88,72 +83,39 @@ public class Mechanics implements Observable {
 		}
 		return str.toString();
 	}
-
-	public boolean checkPossibilityOfRotation() {
-		int x = 0, y = 0;
-		for (Point act : active) {
-			x = activePivot.x + activePivot.y - act.y;
-			y = activePivot.y - activePivot.x + act.x;
-			if (x > BOARD_MAX_ROW - 1)
-				return false;
-			if (x < 0)
-				return false;
-			if (y < 0)
-				return false;
-			if (y > BOARD_MAX_COLUMN - 1)
-				return false;
-		}
-		return true;
-	}
-
+	
 	public void rotate() {
-
-		if (activePivot != null) {
-			if (!checkPossibilityOfRotation())
-				return;
-
-			Color tempColor = board[active[0].x][active[0].y];
-			for (Point act : active) {
-				board[act.x][act.y] = Color.WHITE;
-			}
-
-			for (Point act : active) {
-				Point temp = (Point) (act.clone());
-				act.x = activePivot.x + activePivot.y - temp.y;
-				act.y = activePivot.y - activePivot.x + temp.x;
-			}
-
-			for (Point act : active) {
-				board[act.x][act.y] = tempColor;
-			}
-		}
+		activeTetrimino.rotate(board);
 	}
+
+
 
 	public void changeActivePosition(Direction direct) {
-		Color color = board[active[0].x][active[0].y];
+		ColorType color = activeTetrimino.getBrickColor();
 
-		for (Point act : active) {
-			board[act.x][act.y] = Color.WHITE;
+		for (Point act : activeTetrimino.getActiveBricks()) {
+			board[act.x][act.y] = ColorType.empty;
 		}
 
+		activeTetrimino.move(direct);
+		
+		/* Changing position on the board - tetrimino itself already moved */
+		
 		switch (direct) {
 		case DOWN:
-			for (Point act : active) {
-				act.y = act.y + 1;
+			for (Point act : activeTetrimino.getActiveBricks()) {
 				board[act.x][act.y] = color;
 			}
 			break;
 
 		case LEFT:
-			for (Point act : active) {
-				act.x = act.x - 1;
+			for (Point act : activeTetrimino.getActiveBricks()) {
 				board[act.x][act.y] = color;
 			}
 			break;
 
 		case RIGHT:
-			for (Point act : active) {
-				act.x = act.x + 1;
+			for (Point act : activeTetrimino.getActiveBricks()) {
 				board[act.x][act.y] = color;
 			}
 			break;
@@ -189,10 +151,10 @@ public class Mechanics implements Observable {
 
 	public boolean checkMoveDown() {
 		boolean skip = false;
-		for (Point act : active) {
+		for (Point act : activeTetrimino.getActiveBricks()) {
 			skip = false;
 
-			for (Point skipCheck : active) {
+			for (Point skipCheck : activeTetrimino.getActiveBricks()) {
 				if ((act.y + 1 == skipCheck.y) && (act.x == skipCheck.x))
 					skip = true;
 			}
@@ -203,7 +165,7 @@ public class Mechanics implements Observable {
 					return false;
 				}
 
-				if (board[act.x][act.y + 1] != Color.WHITE) {
+				if (board[act.x][act.y + 1] != ColorType.empty) {
 					return false;
 				}
 
@@ -216,7 +178,7 @@ public class Mechanics implements Observable {
 	public boolean checkMovePossibility(Direction direct) {
 		boolean skip = false; // temporary variable to skip checking move possibility for inner cells
 
-		for (Point act : active) {
+		for (Point act : activeTetrimino.getActiveBricks()) {
 			skip = false;
 
 			switch (direct) {
@@ -225,7 +187,7 @@ public class Mechanics implements Observable {
 				break;
 
 			case RIGHT:
-				for (Point skipCheck : active) {
+				for (Point skipCheck : activeTetrimino.getActiveBricks()) {
 					if ((act.x + 1 == skipCheck.x) && (act.y == skipCheck.y))
 						skip = true;
 				}
@@ -234,14 +196,14 @@ public class Mechanics implements Observable {
 
 					if (act.x + 1 > BOARD_MAX_ROW - 1)
 						return false;
-					if (board[act.x + 1][act.y] != Color.WHITE)
+					if (board[act.x + 1][act.y] != ColorType.empty)
 						return false;
 
 				}
 
 				break;
 			case LEFT:
-				for (Point skipCheck : active) {
+				for (Point skipCheck : activeTetrimino.getActiveBricks()) {
 					if ((act.x - 1 == skipCheck.x) && (act.y == skipCheck.y))
 						skip = true;
 				}
@@ -250,7 +212,7 @@ public class Mechanics implements Observable {
 
 					if (act.x - 1 < 0)
 						return false;
-					if (board[act.x - 1][act.y] != Color.WHITE)
+					if (board[act.x - 1][act.y] != ColorType.empty)
 						return false;
 
 				}
@@ -268,10 +230,10 @@ public class Mechanics implements Observable {
 
 			for (int i = BOARD_MAX_COLUMN - 2; i > 0; i--) {
 				for (int j = 0; j < BOARD_MAX_ROW; j++) {
-					if (board[j][i] != Color.WHITE) {
-						if (board[j][i + 1] == Color.WHITE) {
+					if (board[j][i] != ColorType.empty) {
+						if (board[j][i + 1] == ColorType.empty) {
 							board[j][i + 1] = board[j][i];
-							board[j][i] = Color.WHITE;
+							board[j][i] = ColorType.empty;
 							flag = true;
 						}
 					}
@@ -283,18 +245,18 @@ public class Mechanics implements Observable {
 	public void deleteSequenceHorizontal(int row, int beg, int end) {
 		sequenceCheckFlag = true;
 		for (int i = beg; i < end; i++) {
-			board[i][row] = Color.WHITE;
+			board[i][row] = ColorType.empty;
 		}
 	}
 
 	public void deleteSequenceVertical(int column, int beg, int end) {
 		sequenceCheckFlag = true;
 		for (int i = beg; i < end; i++) {
-			board[column][i] = Color.WHITE;
+			board[column][i] = ColorType.empty;
 		}
 	}
 
-	public void checkSequenceRow(Entry<Color, Long> entry, final ArrayList<Color> array, int deleteNum) {
+	public void checkSequenceRow(Entry<ColorType, Long> entry, final ArrayList<ColorType> array, int deleteNum) {
 		int counter = 0;
 
 		for (int i = 0; i < array.size(); i++) {
@@ -315,13 +277,13 @@ public class Mechanics implements Observable {
 		}
 	}
 
-	public void findFiveInARow(final ArrayList<Color> array, int deleteNum) {
-		Map<Color, Long> occurrences = array.stream().collect(Collectors.groupingBy(w -> w, Collectors.counting()));
+	public void findFiveInARow(final ArrayList<ColorType> array, int deleteNum) {
+		Map<ColorType, Long> occurrences = array.stream().collect(Collectors.groupingBy(w -> w, Collectors.counting()));
 
-		Set<Entry<Color, Long>> entrySet = occurrences.entrySet();
+		Set<Entry<ColorType, Long>> entrySet = occurrences.entrySet();
 
-		for (Entry<Color, Long> entry : entrySet) {
-			if (entry.getKey() != Color.WHITE && entry.getValue() > 4) {
+		for (Entry<ColorType, Long> entry : entrySet) {
+			if (entry.getKey() != ColorType.empty && entry.getValue() > 4) {
 				checkSequenceRow(entry, array, deleteNum);
 			}
 		}
@@ -329,7 +291,7 @@ public class Mechanics implements Observable {
 	}
 
 	public void findSequence() {
-		ArrayList<Color> array = new ArrayList<Color>(Collections.nCopies(10, Color.WHITE));
+		ArrayList<ColorType> array = new ArrayList<ColorType>(Collections.nCopies(10, ColorType.empty));
 
 		for (int i = 0; i < BOARD_MAX_COLUMN; i++) {
 			for (int j = 0; j < BOARD_MAX_ROW; j++) {
@@ -338,7 +300,7 @@ public class Mechanics implements Observable {
 			findFiveInARow(array, i);
 		}
 
-		array = new ArrayList<Color>(Collections.nCopies(20, Color.WHITE));
+		array = new ArrayList<ColorType>(Collections.nCopies(20, ColorType.empty));
 
 		for (int i = 0; i < BOARD_MAX_ROW; i++) {
 			for (int j = 0; j < BOARD_MAX_COLUMN; j++) {
@@ -358,14 +320,15 @@ public class Mechanics implements Observable {
 	}
 
 	public int[] randNextTetrimino() {
-		randomNumb[0] =  (int) (Math.random() * 7);
-		randomNumb[1] =  (int) (Math.random() * 7);
-		return randomNumb;
+		nextBrickChoice[0] =  (int) (Math.random() * 7);
+		nextBrickChoice[1] =  (int) (Math.random() * 7);
+		return nextBrickChoice;
 	}
 	
 	public boolean makeTetrimino() {
 		lookForSequences();
-		activePivot=Tetrimino.makeTetrimino(active, activePivot, board,randomNumb);
+		activeTetrimino=new Tetrimino();
+		activeTetrimino.makeTetrimino(board,nextBrickChoice);
 		notifyObservers();
 		if(!checkMoveDown()) {
 			setEndGame(true);

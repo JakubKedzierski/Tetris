@@ -9,47 +9,10 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
-class MouseClick implements MouseListener{
-
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-}
 
 class InfoBox extends JPanel implements Observer,ActionListener {
 	private static final long serialVersionUID = 1L;
@@ -88,15 +51,48 @@ class InfoBox extends JPanel implements Observer,ActionListener {
 		
 	}
 	
+	public Color convertColor(ColorType colorType) {
+		switch(colorType) {
+		case color1:
+			return Color.BLUE;
+		case color2:
+			return Color.PINK;
+		case color3:
+			return Color.YELLOW;
+		case color4:
+			return Color.CYAN;
+		case color5:
+			return Color.GRAY;
+		case color6:
+			return Color.RED;
+		case color7:
+			return Color.GREEN;
+		case empty:
+			return Color.WHITE;
+		default:
+			return Color.WHITE;
+		
+		}
+
+	}
+	
 	@Override
 	public void paintComponent(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
 		super.paintComponent(g);
 
 		g.setColor(Color.BLACK);
-		Color[][] board = new Color[4][4];
-		Point active[]= {new Point(1,0),new Point(2,0),new Point(2,0),new Point(2,0)};
-		Tetrimino.makeTetrimino(active,new Point(2,2),board,mechanics.randNextTetrimino());
+		ColorType[][] board = new ColorType[4][4];
+		for(int i=0;i<4;i++) {
+			for(int j=0;j<4;j++) {
+				board[i][j]=ColorType.empty;
+			}
+		}
+		
+		Point active[]= {new Point(3,0),new Point(2,0),new Point(2,0),new Point(2,0)};
+		Tetrimino nextBricks = new Tetrimino();
+		nextBricks.setActiveBricks(active);
+		nextBricks.makeTetrimino(board,mechanics.randNextTetrimino());
 		
 		for(int i=0;i<6;i++) {
 			g.setColor(new Color(99, 33, 222));
@@ -116,14 +112,13 @@ class InfoBox extends JPanel implements Observer,ActionListener {
 			g.fillRect(55 +i* brickSize, 350 -  brickSize, brickSize - 2, brickSize - 2);
 		}
 		
-		
 				
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board[i].length; j++) {
 				g2.setColor(Color.WHITE);
 				g2.drawRect(55 + i * brickSize, 350 + j * brickSize, brickSize, brickSize);
-				if (board[i][j] != Color.WHITE) {
-					g.setColor(board[i][j]);
+				if (board[i][j] != ColorType.empty) {
+					g.setColor(convertColor(board[i][j]));
 					g.fillRect(55 + i * brickSize, 350 + j * brickSize, brickSize - 2, brickSize - 2);
 					g.setColor(Color.WHITE);
 				}

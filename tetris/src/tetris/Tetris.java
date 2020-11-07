@@ -48,7 +48,7 @@ public class Tetris implements Observer {
 
 	@Override
 	public void update() {
-		if (mechanics.getEndGame()) {
+		if (mechanics.isEndGame()) {
 			timer.cancel();
 			gui.endGame();
 			timer.purge();

@@ -73,10 +73,10 @@ class KeyActions implements KeyListener {
 		}
 
 		if (keyID == KeyEvent.VK_SPACE) {
-			if (game.isPaused())
-				game.unPause();
+			if (game.isStop())
+				game.setStop(false);
 			else
-				game.pause();
+				game.setStop(true);;
 		}
 		frame.update();
 	}
@@ -128,13 +128,38 @@ class BoardBox extends JPanel {
 	private static Point startPos = new Point(55, 60);
 	private static int brickSize = 20;
 
-	final Color board[][];
+	final ColorType board[][];
 
-	public BoardBox(final Color b[][]) {
+	public BoardBox(final ColorType b[][]) {
 		board = b;
 		setLayout(new BorderLayout());
 		setPreferredSize(new Dimension(320, 550));
 		setBackground(new Color(222, 236, 242));
+	}
+	
+	public Color convertColor(ColorType colorType) {
+		switch(colorType) {
+		case color1:
+			return Color.BLUE;
+		case color2:
+			return Color.PINK;
+		case color3:
+			return Color.YELLOW;
+		case color4:
+			return Color.CYAN;
+		case color5:
+			return Color.GRAY;
+		case color6:
+			return Color.RED;
+		case color7:
+			return Color.GREEN;
+		case empty:
+			return Color.WHITE;
+		default:
+			return Color.WHITE;
+		
+		}
+
 	}
 
 	@Override
@@ -164,8 +189,8 @@ class BoardBox extends JPanel {
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board[i].length; j++) {
 				g2.drawRect(startPos.x + i * brickSize, startPos.y + j * brickSize, brickSize, brickSize);
-				if (board[i][j] != Color.WHITE) {
-					g.setColor(board[i][j]);
+				if (board[i][j] != ColorType.empty) {
+					g.setColor(convertColor(board[i][j]));
 					g.fillRect(startPos.x + i * brickSize, startPos.y + j * brickSize, brickSize - 2, brickSize - 2);
 					g.setColor(Color.BLACK);
 				}
