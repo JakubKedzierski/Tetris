@@ -2,23 +2,30 @@ package tetris;
 
 import java.awt.Color;
 import java.awt.Point;
+import lombok.Getter;
+import lombok.Setter;
+
+enum ColorType{
+	color1,color2,color3,color4,color5,color6,color7,emptyl;
+}
 
 public class Tetrimino {
+	
+	private Point activeTetriminoPivot = new Point(0,0);
+	
 
-	public static Point makeTetrimino(Point[] active, Point activePivot, Color board[][],int tetriminoChoice[]) {
+	public void makeTetrimino(Point[] active, Color board[][],int tetriminoChoice[]) {
 
 		switch (tetriminoChoice[0]) {
 
 		// TETRIMINO "I"
 		case 0:
-			active[0].y = 0;
-			active[1].y = 1;
-			active[1].x = active[0].x;
-			active[2].y = 2;
-			active[2].x = active[0].x;
-			active[3].y = 3;
-			active[3].x = active[0].x;
-			activePivot = active[1];
+			active[0].x = active[0].x;		active[0].y = 0;				
+			active[1].x = active[0].x;		active[1].y = 1;	
+			active[2].x = active[0].x;		active[2].y = 2;	
+			active[3].x = active[0].x;		active[3].y = 3;
+			
+			activeTetriminoPivot = active[1];
 			break;
 
 		// TETRIMINO "T"
