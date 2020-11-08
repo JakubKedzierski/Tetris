@@ -49,6 +49,10 @@ public class Mechanics implements Observable {
 	@Getter
 	@Setter
 	private boolean endGame=false;
+	
+	@Getter
+	private int points=0; 
+	
 	private Set<Observer> observers = new HashSet<>();
 	private int nextBrickChoice[] = { (int) (Math.random() * 7),(int) (Math.random() * 7) };
 
@@ -122,10 +126,6 @@ public class Mechanics implements Observable {
 		}
 	}
 
-	public void moveToEndPosition() {
-		while (move(Direction.DOWN))
-			;
-	}
 
 	public boolean move(Direction direct) {
 		if (!stop) {
@@ -264,6 +264,10 @@ public class Mechanics implements Observable {
 				counter++;
 				if (counter > 4) {
 
+					if (counter == 5) {
+						points+=5;    //////////////////////////// not working
+					}
+					
 					if (array.size() > 10)
 						deleteSequenceVertical(deleteNum, i - counter + 1, i + 1);
 					else
@@ -336,8 +340,8 @@ public class Mechanics implements Observable {
 		return false;
 	}
 
-	void playGame() {
-		move(Direction.DOWN);
+	boolean playGame() {
+		return move(Direction.DOWN);
 	}
 
 	@Override

@@ -80,6 +80,7 @@ class InfoBox extends JPanel implements Observer,ActionListener {
 	public void paintComponent(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
 		super.paintComponent(g);
+		points.setText("Points: " + mechanics.getPoints());
 
 		g.setColor(Color.BLACK);
 		ColorType[][] board = new ColorType[4][4];

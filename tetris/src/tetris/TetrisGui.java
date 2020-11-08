@@ -10,7 +10,7 @@ import javax.swing.JPanel;
 public class TetrisGui {
 	TetrisFrame frame;
 
-	public TetrisGui(Mechanics game) {
+	public TetrisGui(Tetris game) {
 		frame = new TetrisFrame(game);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.pack();
@@ -30,11 +30,11 @@ public class TetrisGui {
 }
 
 class KeyActions implements KeyListener {
-	Mechanics game;
+	Tetris game;
 	TetrisFrame frame;
 	int keyID;
 
-	public KeyActions(Mechanics movementInTetris, TetrisFrame f) {
+	public KeyActions(Tetris movementInTetris, TetrisFrame f) {
 		game = movementInTetris;
 		frame = f;
 	}
@@ -57,26 +57,26 @@ class KeyActions implements KeyListener {
 
 	public void update() {
 		if (keyID == KeyEvent.VK_LEFT) {
-			game.move(Direction.LEFT);
+			game.moveSide(Direction.LEFT);
 		}
 
 		if (keyID == KeyEvent.VK_RIGHT) {
-			game.move(Direction.RIGHT);
+			game.moveSide(Direction.RIGHT);
 		}
 
 		if (keyID == KeyEvent.VK_DOWN) {
-			game.moveToEndPosition();
+			game.moveTetriminoToEnd();
 		}
 
 		if (keyID == KeyEvent.VK_D) {
-			game.rotate();
+			game.getMechanics().rotate();
 		}
 
 		if (keyID == KeyEvent.VK_SPACE) {
-			if (game.isStop())
-				game.setStop(false);
+			if (game.getMechanics().isStop())
+				game.getMechanics().setStop(false);
 			else
-				game.setStop(true);;
+				game.getMechanics().setStop(true);;
 		}
 		frame.update();
 	}
@@ -90,17 +90,16 @@ class TetrisFrame extends JFrame {
 	JPanel tetrisBoard;
 	KeyActions k;
 
-	Mechanics mech;
 
-	public TetrisFrame(Mechanics m) {
+	public TetrisFrame(Tetris game) {
 		setSize(DEF_WIDTH, DEF_HEIGHT);
 		setTitle("Tetris vol Jacob");
 		setLocationRelativeTo(null);
 		setResizable(false);
 
-		tetrisBoard = new BoardBox(m.getBoard());
-		WindowPanel = new InfoBox(m);
-		k = new KeyActions(m, this);
+		tetrisBoard = new BoardBox(game.getMechanics().getBoard());
+		WindowPanel = new InfoBox(game.getMechanics());
+		k = new KeyActions(game, this);
 		addKeyListener(k);
 
 		JPanel topPanel = new JPanel();
@@ -113,7 +112,6 @@ class TetrisFrame extends JFrame {
 		splitPaneH.setLeftComponent(tetrisBoard);
 		splitPaneH.setRightComponent(WindowPanel);
 
-		mech = m;
 	}
 
 	public void update() {
