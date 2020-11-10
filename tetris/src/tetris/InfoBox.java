@@ -7,23 +7,26 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 
 
-class InfoBox extends JPanel implements Observer,ActionListener {
+
+class InfoBox extends JPanel implements Observer {
 	private static final long serialVersionUID = 1L;
 
 	private JLabel time = new JLabel("Time:");
 	private JLabel points = new JLabel("Points:");
 	private JLabel nextBrick = new JLabel("   next brick will be:");
-	private JToggleButton pause = new JToggleButton("Pause");
+	private JLabel pressButton = new JLabel("   Press SPACE to stop for a while");
 	private Color panelColor=new Color(237, 244, 248);
 	private static int brickSize = 20;
 	private Mechanics mechanics;
+	private Timer timer;
+	private int timeCount=0;
+	private final int PERIOD_INTERVAL = 1000;
 
 	InfoBox(Mechanics mechanics) {
 		this.mechanics=mechanics;
@@ -43,12 +46,12 @@ class InfoBox extends JPanel implements Observer,ActionListener {
 		timePanel.add(points, BorderLayout.CENTER);
 		timePanel.setBackground(panelColor);
 		
-		pause.setEnabled(false);
-		add(pause,BorderLayout.SOUTH);
-		
 		add(timePanel, BorderLayout.NORTH);
 		add(nextBrick, BorderLayout.CENTER);
+		add(pressButton, BorderLayout.SOUTH);
 		
+		timer=new Timer();
+		timer.scheduleAtFixedRate(new SecCounter(),0,PERIOD_INTERVAL);
 	}
 	
 	public Color convertColor(ColorType colorType) {
@@ -80,7 +83,8 @@ class InfoBox extends JPanel implements Observer,ActionListener {
 	public void paintComponent(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
 		super.paintComponent(g);
-		points.setText("Points: " + mechanics.getPoints());
+		points.setText("          Points: " + mechanics.getPoints());
+		
 
 		g.setColor(Color.BLACK);
 		ColorType[][] board = new ColorType[4][4];
@@ -93,7 +97,7 @@ class InfoBox extends JPanel implements Observer,ActionListener {
 		Point active[]= {new Point(3,0),new Point(2,0),new Point(2,0),new Point(2,0)};
 		Tetrimino nextBricks = new Tetrimino();
 		nextBricks.setActiveBricks(active);
-		nextBricks.makeTetrimino(board,mechanics.randNextTetrimino());
+		nextBricks.makeTetrimino(board,mechanics.getNextBrickChoice());
 		
 		for(int i=0;i<6;i++) {
 			g.setColor(new Color(99, 33, 222));
@@ -128,15 +132,31 @@ class InfoBox extends JPanel implements Observer,ActionListener {
 		}
 	}
 
+	
 	@Override
 	public void update() {
-		repaint();
+		if(!mechanics.isEndGame())
+			repaint();
+		else {
+			timer.cancel();
+			timer.purge();
+		}
 	}
 
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
 
+	
+	private class SecCounter extends TimerTask {
+
+		@Override
+		public void run() {
+			if(!mechanics.isEndGame()) {
+				timeCount++;
+				time.setText("          Time: " + timeCount);
+				repaint();
+			}else {
+				timer.cancel();
+				timer.purge();
+			}
+		}
+	}
 }

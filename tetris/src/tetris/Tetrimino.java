@@ -1,6 +1,7 @@
 package tetris;
 
 import java.awt.Point;
+import java.io.Serializable;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,8 +14,10 @@ enum ColorType{
 
 @AllArgsConstructor(access=AccessLevel.PUBLIC)
 @ToString
-public class Tetrimino {
-	
+public class Tetrimino implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
 	@Getter
 	@Setter
 	private Point activeBrickskPivot = null;
@@ -171,11 +174,17 @@ public class Tetrimino {
 		return false;
 	}
 	
-	public boolean checkPossibilityOfRotation(ColorType[][] board) {
+	public boolean checkPossibilityOfRotation(ColorType[][] board,boolean rotationDirection) {
 		int x = 0, y = 0;
 		for (Point act : activeBricks) {
-			x = activeBrickskPivot.x + activeBrickskPivot.y - act.y;
-			y = activeBrickskPivot.y - activeBrickskPivot.x + act.x;
+			if(rotationDirection) {
+				x = activeBrickskPivot.x + activeBrickskPivot.y - act.y;
+				y = activeBrickskPivot.y - activeBrickskPivot.x + act.x;
+			}else {
+				x = activeBrickskPivot.x - activeBrickskPivot.y + act.y;
+				y = activeBrickskPivot.y + activeBrickskPivot.x - act.x;
+			}
+			
 			if (x > Mechanics.BOARD_MAX_ROW - 1)
 				return false;
 			if (x < 0)
@@ -193,10 +202,10 @@ public class Tetrimino {
 		return true;
 	}
 	
-	public void rotate(ColorType board[][]) {
+	public void rotate(ColorType board[][],boolean rotationDirection) {
 
 		if (activeBrickskPivot != null) {
-			if (!checkPossibilityOfRotation(board))
+			if (!checkPossibilityOfRotation(board,rotationDirection))
 				return;
 
 			ColorType tempColor = board[activeBricks[0].x][activeBricks[0].y];
@@ -206,8 +215,14 @@ public class Tetrimino {
 
 			for (Point act : activeBricks) {
 				Point temp = (Point) (act.clone());
-				act.x = activeBrickskPivot.x + activeBrickskPivot.y - temp.y;
-				act.y = activeBrickskPivot.y - activeBrickskPivot.x + temp.x;
+			
+				if(rotationDirection) {
+					act.x = activeBrickskPivot.x + activeBrickskPivot.y - temp.y;
+					act.y = activeBrickskPivot.y - activeBrickskPivot.x + temp.x;
+				}else {
+					act.x = activeBrickskPivot.x - activeBrickskPivot.y + temp.y;
+					act.y = activeBrickskPivot.y + activeBrickskPivot.x - temp.x;
+				}
 			}
 
 			for (Point act : activeBricks) {

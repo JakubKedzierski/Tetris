@@ -4,8 +4,6 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
 
 public class TetrisGui {
 	TetrisFrame frame;
@@ -20,11 +18,18 @@ public class TetrisGui {
 	public void endGame() {
 		new EndGameFrame(frame);
 		frame.dispose();
-		new Tetris();
 	}
 
 	public void update() {
 		frame.update();
+	}
+	
+	public void dispose() {
+		frame.dispose();
+	}
+	
+	public void sayMessage(Exception err) {
+		JOptionPane.showMessageDialog(frame, err.getMessage(), "B³¹d", JOptionPane.ERROR_MESSAGE);
 	}
 
 }
@@ -69,7 +74,19 @@ class KeyActions implements KeyListener {
 		}
 
 		if (keyID == KeyEvent.VK_D) {
-			game.getMechanics().rotate();
+			game.rotate(true);
+		}
+		
+		if (keyID == KeyEvent.VK_X) {
+			game.write();
+		}
+		
+		if (keyID == KeyEvent.VK_C) {
+			game.read();
+		}
+		
+		if (keyID == KeyEvent.VK_A) {
+			game.rotate(false);
 		}
 
 		if (keyID == KeyEvent.VK_SPACE) {

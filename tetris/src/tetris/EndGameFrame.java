@@ -40,7 +40,6 @@ public class EndGameFrame extends JDialog implements ActionListener{
 		endPanel.add(endButton);
 		endPanel.add(newGameButton);
 		setContentPane(endPanel);
-
 		
 		setVisible(true);
 	}
@@ -55,6 +54,7 @@ public class EndGameFrame extends JDialog implements ActionListener{
 		}
 		if(button==newGameButton) {
 			dispose();
+			new Tetris();
 		}
 		
 	}

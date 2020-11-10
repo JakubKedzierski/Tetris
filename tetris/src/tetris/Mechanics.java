@@ -1,6 +1,13 @@
 package tetris;
 
 import java.awt.Point;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.stream.Collectors;
 import java.lang.StringBuilder;
 import java.util.ArrayList;
@@ -28,7 +35,9 @@ class GameException extends Exception {
 }
 
 @AllArgsConstructor(access=AccessLevel.PUBLIC)
-public class Mechanics implements Observable {
+public class Mechanics implements Observable,Serializable {
+	private static final long serialVersionUID = 1L;
+	
 	final static int BOARD_MAX_ROW = 10;
 	final static int BOARD_MAX_COLUMN = 20;
 	
@@ -53,10 +62,38 @@ public class Mechanics implements Observable {
 	@Getter
 	private int points=0; 
 	
-	private Set<Observer> observers = new HashSet<>();
+	transient
+	public Set<Observer> observers = new HashSet<>();
+	
+	@Getter
 	private int nextBrickChoice[] = { (int) (Math.random() * 7),(int) (Math.random() * 7) };
+	
+	public static void writeObject(String file_name, Mechanics mechancsToSave) throws GameException {
+		try(ObjectOutputStream outputStream=new ObjectOutputStream(new FileOutputStream(file_name))){
+			outputStream.writeObject(mechancsToSave);
+		}
+		catch (FileNotFoundException e) {
+			throw new GameException("File not found");
+		} catch (IOException e) {
+			throw new GameException("IO Exception");
+		}
+	}
+	
+	public static Mechanics readObject(String file_name) throws GameException, ClassNotFoundException {
+		Mechanics mechancsToRead= new Mechanics();
+		try(ObjectInputStream inputStream=new ObjectInputStream(new FileInputStream(file_name))) {
+			mechancsToRead=(Mechanics) inputStream.readObject();
+		} catch (FileNotFoundException e) {
+			throw new GameException("File not found");
+		} catch (IOException e) {
+			throw new GameException("Some troubles with serialization");
+		}
+		return mechancsToRead;
+	}
 
 	public Mechanics() {
+		randNextTetrimino() ;
+		stop=false;
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board[i].length; j++) {
 				board[i][j] = ColorType.empty;
@@ -88,8 +125,9 @@ public class Mechanics implements Observable {
 		return str.toString();
 	}
 	
-	public void rotate() {
-		activeTetrimino.rotate(board);
+	public void rotate(boolean rotationDirection) {
+		if(!stop)
+		activeTetrimino.rotate(board,rotationDirection);
 	}
 
 
@@ -174,7 +212,7 @@ public class Mechanics implements Observable {
 		return true;
 	}
 
-	// do przerobienia check move down jest
+
 	public boolean checkMovePossibility(Direction direct) {
 		boolean skip = false; // temporary variable to skip checking move possibility for inner cells
 
@@ -268,6 +306,10 @@ public class Mechanics implements Observable {
 						points+=5;    //////////////////////////// not working
 					}
 					
+					if (counter > 5) {
+						points+=1;    //////////////////////////// not working
+					}
+					
 					if (array.size() > 10)
 						deleteSequenceVertical(deleteNum, i - counter + 1, i + 1);
 					else
@@ -295,7 +337,7 @@ public class Mechanics implements Observable {
 	}
 
 	public void findSequence() {
-		ArrayList<ColorType> array = new ArrayList<ColorType>(Collections.nCopies(10, ColorType.empty));
+		ArrayList<ColorType> array = new ArrayList<ColorType>(Collections.nCopies(BOARD_MAX_ROW, ColorType.empty));
 
 		for (int i = 0; i < BOARD_MAX_COLUMN; i++) {
 			for (int j = 0; j < BOARD_MAX_ROW; j++) {
@@ -304,7 +346,7 @@ public class Mechanics implements Observable {
 			findFiveInARow(array, i);
 		}
 
-		array = new ArrayList<ColorType>(Collections.nCopies(20, ColorType.empty));
+		array = new ArrayList<ColorType>(Collections.nCopies(BOARD_MAX_COLUMN, ColorType.empty));
 
 		for (int i = 0; i < BOARD_MAX_ROW; i++) {
 			for (int j = 0; j < BOARD_MAX_COLUMN; j++) {
@@ -333,7 +375,9 @@ public class Mechanics implements Observable {
 		lookForSequences();
 		activeTetrimino=new Tetrimino();
 		activeTetrimino.makeTetrimino(board,nextBrickChoice);
+		randNextTetrimino() ;
 		notifyObservers();
+		
 		if(!checkMoveDown()) {
 			setEndGame(true);
 		}
@@ -346,8 +390,12 @@ public class Mechanics implements Observable {
 
 	@Override
 	public void attach(Observer observer) {
-		observers.add(observer);
-
+		if(observers!=null && observer != null)
+			observers.add(observer);
+		else if(observer != null) {
+			observers=new HashSet<>();
+			observers.add(observer);
+		}
 	}
 
 	@Override
@@ -358,7 +406,6 @@ public class Mechanics implements Observable {
 	@Override
 	public void notifyObservers() {
 		observers.forEach(Observer::update);
-
 	}
 
 }
