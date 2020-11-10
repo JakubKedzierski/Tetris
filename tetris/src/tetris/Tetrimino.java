@@ -162,7 +162,16 @@ public class Tetrimino {
 		brickColor=board[activeBricks[0].x][activeBricks[0].y];
 	}
 	
-	public boolean checkPossibilityOfRotation() {
+	public boolean isPointAcive(Point temp) {
+		for(Point active:activeBricks) {
+			if(active.equals(temp)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean checkPossibilityOfRotation(ColorType[][] board) {
 		int x = 0, y = 0;
 		for (Point act : activeBricks) {
 			x = activeBrickskPivot.x + activeBrickskPivot.y - act.y;
@@ -175,6 +184,11 @@ public class Tetrimino {
 				return false;
 			if (y > Mechanics.BOARD_MAX_COLUMN - 1)
 				return false;
+			
+			if(!isPointAcive(new Point(x,y))) {
+				if(board[x][y]!=ColorType.empty) return false;
+			}
+
 		}
 		return true;
 	}
@@ -182,7 +196,7 @@ public class Tetrimino {
 	public void rotate(ColorType board[][]) {
 
 		if (activeBrickskPivot != null) {
-			if (!checkPossibilityOfRotation())
+			if (!checkPossibilityOfRotation(board))
 				return;
 
 			ColorType tempColor = board[activeBricks[0].x][activeBricks[0].y];
