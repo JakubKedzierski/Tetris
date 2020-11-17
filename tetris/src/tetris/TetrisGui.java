@@ -5,14 +5,41 @@ import javax.swing.*;
 import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
 
-public class TetrisGui {
-	TetrisFrame frame;
+public class TetrisGui extends JFrame {
+	private static final long serialVersionUID = 1L;
+	private static final int DEF_WIDTH = 800;
+	private static final int DEF_HEIGHT = 600;
+	JPanel WindowPanel;
+	JPanel tetrisBoard;
+	KeyActions k;
 
 	public TetrisGui(Tetris game) {
+		setSize(DEF_WIDTH, DEF_HEIGHT);
+		setTitle("Tetris vol Jacob");
+		setLocationRelativeTo(null);
+		setResizable(false);
+
+		tetrisBoard = new BoardBox(game.getMechanics().getBoard());
+		WindowPanel = new InfoBox(game.getMechanics());
+		k = new KeyActions(game, this);
+		addKeyListener(k);
+
+		JPanel topPanel = new JPanel();
+		topPanel.setLayout(new BorderLayout());
+		getContentPane().add(topPanel);
+
+		JSplitPane splitPaneH = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		splitPaneH.setEnabled(false);
+		topPanel.add(splitPaneH, BorderLayout.CENTER);
+		splitPaneH.setLeftComponent(tetrisBoard);
+		splitPaneH.setRightComponent(WindowPanel);
+		
+		
 		frame = new TetrisFrame(game);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.pack();
 		frame.setVisible(true);
+		frame.setFocusable(true);
 	}
 	
 	public void endGame() {
