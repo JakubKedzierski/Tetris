@@ -20,14 +20,19 @@ public class Tetris implements Observer {
 	
 	@Getter
 	private Mechanics mechanics;
+	@Getter
 	private TetrisGui gui;
 	private Timer timer;
 	private final int INITIAL_DELAY = 600;
 	private final int PERIOD_INTERVAL = 400;
 	private boolean blockSideMoves=false;
+	
+	@Getter
+	private String username;
 
 
-	public Tetris() {
+	public Tetris(String username) {
+		this.username=username;
 		mechanics = new Mechanics();
 		timer = new Timer();
 		timer.scheduleAtFixedRate(new mainLoop(), INITIAL_DELAY, PERIOD_INTERVAL);
@@ -36,6 +41,7 @@ public class Tetris implements Observer {
 		mechanics.makeTetrimino();
 		mechanics.attach(this);
 	}
+	
 	
 	public void write() {
 		try {
@@ -59,7 +65,7 @@ public class Tetris implements Observer {
 	}
 
 	public static void main(String[] args) {
-		new Tetris();
+		new WelcomeWindow();
 	}
 	
 	public void moveTetriminoToEnd() {

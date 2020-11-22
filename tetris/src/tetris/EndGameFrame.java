@@ -11,6 +11,9 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import java.awt.SystemColor;
+import javax.swing.UIManager;
+import java.awt.Color;
 
 
 public class EndGameFrame extends JDialog implements ActionListener{
@@ -24,6 +27,7 @@ public class EndGameFrame extends JDialog implements ActionListener{
 	
 	EndGameFrame(Window parent){
 		super(parent, Dialog.ModalityType.DOCUMENT_MODAL);
+		setBackground(UIManager.getColor("ToolBar.foreground"));
 		setTitle("Tetris");
 		setSize(300, 160);
 		setResizable(false);
@@ -31,11 +35,15 @@ public class EndGameFrame extends JDialog implements ActionListener{
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
 		JPanel endPanel= new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+		endPanel.setBackground(SystemColor.menu);
 
 		endMessage.setFont(font);
 		endPanel.add(endMessage);
+		endButton.setBackground(UIManager.getColor("Tree.selectionBackground"));
+		endButton.setForeground(SystemColor.desktop);
 		
 		endButton.addActionListener(this);
+		newGameButton.setBackground(UIManager.getColor("Tree.selectionBackground"));
 		newGameButton.addActionListener(this);
 		endPanel.add(endButton);
 		endPanel.add(newGameButton);
@@ -54,7 +62,7 @@ public class EndGameFrame extends JDialog implements ActionListener{
 		}
 		if(button==newGameButton) {
 			dispose();
-			new Tetris();
+			new Tetris(null);
 		}
 		
 	}

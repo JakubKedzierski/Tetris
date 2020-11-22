@@ -6,52 +6,76 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.Point;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.awt.SystemColor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
 
 
 
-class InfoBox extends JPanel implements Observer {
+class InfoBox extends JPanel implements Observer,ActionListener {
 	private static final long serialVersionUID = 1L;
 
-	private JLabel time = new JLabel("Time:");
-	private JLabel points = new JLabel("Points:");
+	private JLabel points = new JLabel("Points:",SwingConstants.CENTER);
 	private JLabel nextBrick = new JLabel("   next brick will be:");
-	private JLabel pressButton = new JLabel("   Press SPACE to stop for a while");
+	private JLabel usernameLab = new JLabel("Username",SwingConstants.CENTER);
+	private JLabel username = new JLabel("Anonymous",SwingConstants.CENTER);
+	private JButton pause = new JButton("     Pause     ");
+	private JButton controls = new JButton("    Controls    ");
 	private Color panelColor=new Color(237, 244, 248);
 	private static int brickSize = 20;
 	private Mechanics mechanics;
-	private Timer timer;
-	private int timeCount=0;
-	private final int PERIOD_INTERVAL = 1000;
+	
 
-	InfoBox(Mechanics mechanics) {
-		this.mechanics=mechanics;
+	InfoBox(Tetris game) {
+		this.mechanics=game.getMechanics();
 		mechanics.attach(this);
+		if(game.getUsername() != null && !game.getUsername().equals("")) {
+			username.setText(game.getUsername());
+		}
 		setBackground(panelColor);
 		setLayout(new BorderLayout());
 		setPreferredSize(new Dimension(200, 300));
-		JLabel labels[] = { time, points, nextBrick };
-
+		JLabel labels[] = { points, nextBrick, usernameLab };
 		for (JLabel label : labels) {
-			label.setBounds(50, 50, 100, 30);
 			label.setFont(new Font("Verdana", Font.PLAIN, 18));
 		}
-		JPanel timePanel = new JPanel();
-		timePanel.setLayout(new BorderLayout());
-		timePanel.add(time, BorderLayout.NORTH);
-		timePanel.add(points, BorderLayout.CENTER);
-		timePanel.setBackground(panelColor);
+		username.setFont(new Font("Yu Gothic UI Semibold",Font.PLAIN, 18));
+		username.setForeground(new Color(0, 0, 205));
 		
-		add(timePanel, BorderLayout.NORTH);
+		points.setText("Points: " + mechanics.getPoints());
+
+		controls.addActionListener(this);
+		JPanel generalPanel = new JPanel();
+		GridLayout layout = new GridLayout(3,1);
+		layout.setVgap(10);
+		generalPanel.setLayout(layout);
+		generalPanel.add(points);
+		generalPanel.add(usernameLab);
+		generalPanel.add(username);
+		generalPanel.setBackground(panelColor);
+		pause.addActionListener(this);
+		setFocusable(true);
+		pause.setBackground(SystemColor.activeCaption);
+		add(generalPanel, BorderLayout.NORTH);
 		add(nextBrick, BorderLayout.CENTER);
-		add(pressButton, BorderLayout.SOUTH);
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.add(pause);
+		GridLayout layout2 = new GridLayout(2,1);
+		buttonPanel.setLayout(layout2);
+		controls.setBackground(SystemColor.activeCaption);
+		buttonPanel.add(controls);
+		buttonPanel.setBackground(panelColor);
+		add(buttonPanel,BorderLayout.SOUTH);
 		
-		timer=new Timer();
-		timer.scheduleAtFixedRate(new SecCounter(),0,PERIOD_INTERVAL);
 	}
 	
 	public Color convertColor(ColorType colorType) {
@@ -83,8 +107,7 @@ class InfoBox extends JPanel implements Observer {
 	public void paintComponent(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
 		super.paintComponent(g);
-		points.setText("          Points: " + mechanics.getPoints());
-		
+		points.setText("Points: " + mechanics.getPoints());
 
 		g.setColor(Color.BLACK);
 		ColorType[][] board = new ColorType[4][4];
@@ -97,7 +120,7 @@ class InfoBox extends JPanel implements Observer {
 		Point active[]= {new Point(3,0),new Point(2,0),new Point(2,0),new Point(2,0)};
 		Tetrimino nextBricks = new Tetrimino();
 		nextBricks.setActiveBricks(active);
-		nextBricks.makeTetrimino(board,mechanics.getNextBrickChoice());
+		nextBricks.makeTetrimino(board,mechanics.randNextTetrimino());
 		
 		for(int i=0;i<6;i++) {
 			g.setColor(new Color(99, 33, 222));
@@ -132,31 +155,25 @@ class InfoBox extends JPanel implements Observer {
 		}
 	}
 
-	
 	@Override
 	public void update() {
-		if(!mechanics.isEndGame())
-			repaint();
-		else {
-			timer.cancel();
-			timer.purge();
+		repaint();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if(e.getSource() == pause) {
+			if (mechanics.isStop())
+				mechanics.setStop(false);
+			else
+				mechanics.setStop(true);
+		}
+		if(e.getSource() == controls) {
+			mechanics.setStop(true);
+			JOptionPane.showMessageDialog(this, WelcomeWindow.manualMessage,"Controls",JOptionPane.CANCEL_OPTION );
+			mechanics.setStop(false);
 		}
 	}
 
-
-	
-	private class SecCounter extends TimerTask {
-
-		@Override
-		public void run() {
-			if(!mechanics.isEndGame()) {
-				timeCount++;
-				time.setText("          Time: " + timeCount);
-				repaint();
-			}else {
-				timer.cancel();
-				timer.purge();
-			}
-		}
-	}
 }
+

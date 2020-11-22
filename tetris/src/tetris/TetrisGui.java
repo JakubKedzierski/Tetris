@@ -11,18 +11,21 @@ public class TetrisGui extends JFrame {
 	private static final int DEF_HEIGHT = 600;
 	JPanel WindowPanel;
 	JPanel tetrisBoard;
-	KeyActions k;
+	KeyActions keyActions;
 
 	public TetrisGui(Tetris game) {
 		setSize(DEF_WIDTH, DEF_HEIGHT);
 		setTitle("Tetris vol Jacob");
 		setLocationRelativeTo(null);
 		setResizable(false);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setFocusable(true);
+		requestFocusInWindow();
 
 		tetrisBoard = new BoardBox(game.getMechanics().getBoard());
-		WindowPanel = new InfoBox(game.getMechanics());
-		k = new KeyActions(game, this);
-		addKeyListener(k);
+		WindowPanel = new InfoBox(game);
+		keyActions = new KeyActions(game, this);
+		addKeyListener(keyActions);
 
 		JPanel topPanel = new JPanel();
 		topPanel.setLayout(new BorderLayout());
@@ -33,40 +36,39 @@ public class TetrisGui extends JFrame {
 		topPanel.add(splitPaneH, BorderLayout.CENTER);
 		splitPaneH.setLeftComponent(tetrisBoard);
 		splitPaneH.setRightComponent(WindowPanel);
+		splitPaneH.setBackground(SystemColor.inactiveCaptionBorder);
+		splitPaneH.setDividerSize(1);
+		pack();
 		
-		
-		frame = new TetrisFrame(game);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.pack();
-		frame.setVisible(true);
-		frame.setFocusable(true);
+		setVisible(true);
+
 	}
 	
 	public void endGame() {
-		new EndGameFrame(frame);
-		frame.dispose();
+		new EndGameFrame(this);
+		dispose();
 	}
 
 	public void update() {
-		frame.update();
+		tetrisBoard.repaint();
+		requestFocusInWindow();
 	}
 	
-	public void dispose() {
-		frame.dispose();
-	}
 	
 	public void sayMessage(Exception err) {
-		JOptionPane.showMessageDialog(frame, err.getMessage(), "B³¹d", JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(this, err.getMessage(), "B³¹d", JOptionPane.ERROR_MESSAGE);
 	}
 
 }
 
+
+
 class KeyActions implements KeyListener {
 	Tetris game;
-	TetrisFrame frame;
+	TetrisGui frame;
 	int keyID;
 
-	public KeyActions(Tetris movementInTetris, TetrisFrame f) {
+	public KeyActions(Tetris movementInTetris, TetrisGui f) {
 		game = movementInTetris;
 		frame = f;
 	}
@@ -108,9 +110,6 @@ class KeyActions implements KeyListener {
 			game.write();
 		}
 		
-		if (keyID == KeyEvent.VK_C) {
-			game.read();
-		}
 		
 		if (keyID == KeyEvent.VK_A) {
 			game.rotate(false);
@@ -126,123 +125,4 @@ class KeyActions implements KeyListener {
 	}
 }
 
-class TetrisFrame extends JFrame {
-	private static final long serialVersionUID = 1L;
-	private static final int DEF_WIDTH = 800;
-	private static final int DEF_HEIGHT = 600;
-	JPanel WindowPanel;
-	JPanel tetrisBoard;
-	KeyActions k;
 
-
-	public TetrisFrame(Tetris game) {
-		setSize(DEF_WIDTH, DEF_HEIGHT);
-		setTitle("Tetris vol Jacob");
-		setLocationRelativeTo(null);
-		setResizable(false);
-
-		tetrisBoard = new BoardBox(game.getMechanics().getBoard());
-		WindowPanel = new InfoBox(game.getMechanics());
-		k = new KeyActions(game, this);
-		addKeyListener(k);
-
-		JPanel topPanel = new JPanel();
-		topPanel.setLayout(new BorderLayout());
-		getContentPane().add(topPanel);
-
-		JSplitPane splitPaneH = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		splitPaneH.setEnabled(false);
-		topPanel.add(splitPaneH, BorderLayout.CENTER);
-		splitPaneH.setLeftComponent(tetrisBoard);
-		splitPaneH.setRightComponent(WindowPanel);
-
-	}
-
-	public void update() {
-		tetrisBoard.repaint();
-	}
-
-}
-
-class BoardBox extends JPanel {
-
-	private static final long serialVersionUID = 1L;
-	private static Point startPos = new Point(55, 60);
-	private static int brickSize = 20;
-
-	final ColorType board[][];
-
-	public BoardBox(final ColorType b[][]) {
-		board = b;
-		setLayout(new BorderLayout());
-		setPreferredSize(new Dimension(320, 550));
-		setBackground(new Color(222, 236, 242));
-	}
-	
-	public Color convertColor(ColorType colorType) {
-		switch(colorType) {
-		case color1:
-			return Color.BLUE;
-		case color2:
-			return Color.PINK;
-		case color3:
-			return Color.YELLOW;
-		case color4:
-			return Color.CYAN;
-		case color5:
-			return Color.GRAY;
-		case color6:
-			return Color.RED;
-		case color7:
-			return Color.GREEN;
-		case empty:
-			return Color.WHITE;
-		default:
-			return Color.WHITE;
-		
-		}
-
-	}
-
-	@Override
-	public void paintComponent(Graphics g) {
-		Graphics2D g2 = (Graphics2D) g;
-		super.paintComponent(g);
-
-		for (int j = 0; j < 2; j++) {
-			for (int i = 0; i < board.length + 2; i++) {
-				g.setColor(new Color(99, 33, 222));
-				g2.fillRect(startPos.x - brickSize + i * brickSize, startPos.y- brickSize +j*21*brickSize, 18, 18);
-				g.setColor(Color.LIGHT_GRAY);
-				g2.drawRect(startPos.x - brickSize + i * brickSize, startPos.y- brickSize +j*21*brickSize, 20, 20);
-			}
-		}
-
-		for (int j = 0; j < 2; j++) {
-			for (int i = -1; i < 21; i++) {
-				g.setColor(new Color(99, 33, 222));
-				g2.fillRect(startPos.x - brickSize + j * 11 * brickSize, startPos.y + i * brickSize, 18, 18);
-				g.setColor(Color.LIGHT_GRAY);
-				g2.drawRect(startPos.x - brickSize + j * 11 * brickSize, startPos.y + i * brickSize, 20, 20);
-			}
-		}
-
-		g.setColor(Color.BLACK);
-		for (int i = 0; i < board.length; i++) {
-			for (int j = 0; j < board[i].length; j++) {
-				g2.drawRect(startPos.x + i * brickSize, startPos.y + j * brickSize, brickSize, brickSize);
-				if (board[i][j] != ColorType.empty) {
-					g.setColor(convertColor(board[i][j]));
-					g.fillRect(startPos.x + i * brickSize, startPos.y + j * brickSize, brickSize - 2, brickSize - 2);
-					g.setColor(Color.BLACK);
-				}
-
-			}
-		}
-
-		String Message = "Tetris Game";
-		g2.setFont(new Font("Verdana", Font.PLAIN, 20));
-		g2.drawString(Message, 93, 30);
-	}
-
-}
